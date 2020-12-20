@@ -13,10 +13,10 @@ float Pow5(float v)
 
 //法线分布项，这里有三种
 //D1：γ=2，代表基础底层材质（Base Material）的反射，可为各项异性（anisotropic） 或各项同性（isotropic）的金属或非金属
-float D_GTR1(float alpha, float dotNH)
+float D_GTR1(float roughness, float NdotH)
 {
-    float a2 = lerp(0.002, 1, alpha); //lerp一下避免出现奇怪的半点
-    float cos2th = dotNH * dotNH;
+    float a2 = lerp(0.002, 1, roughness); //lerp一下避免出现奇怪的半点
+    float cos2th = NdotH * NdotH;
     float den = (1.0 + (a2 - 1.0) * cos2th);
 
     return (a2 - 1.0) / (PI * log(a2) * den); //！！！PI
@@ -38,6 +38,33 @@ float D_GTR2_aniso(float dotHX, float dotHY, float dotNH, float ax, float ay)
     float deno = dotHX * dotHX / (ax * ax) + dotHY * dotHY / (ay * ay) + dotNH * dotNH;
     return 1.0 / (PI * ax * ay * deno * deno);
 }
+
+// Normal distribution functions
+float trowbridgeReitzNDF(float NdotH, float roughness)
+{
+    float alpha = Pow4(roughness);
+    float NdotH2 = NdotH * NdotH;
+    float denominator = PI * pow((alpha - 1) * NdotH2 + 1, 2);
+    return alpha / denominator;
+}
+
+float trowbridgeReitzAnisotropicNDF(float NdotH, float roughness, float anisotropy, float HdotT, float HdotB)
+{
+    float aspect = sqrt(1.0 - 0.9 * anisotropy);
+    float alpha = roughness * roughness;
+
+    float roughT = alpha / aspect;
+    float roughB = alpha * aspect;
+
+    float alpha2 = alpha * alpha;
+    float NdotH2 = NdotH * NdotH;
+    float HdotT2 = HdotT * HdotT;
+    float HdotB2 = HdotB * HdotB;
+
+    float denominator = PI * roughT * roughB * pow(HdotT2 / (roughT * roughT) + HdotB2 / (roughB * roughB) + NdotH2, 2);
+    return 1 / denominator;
+}
+
 
 
 // 漫反射
@@ -69,36 +96,9 @@ float3 fresnel(float3 F0, float NdotV)
 //}
 
 //添加了lerp，不过好像没太大差别
-float3 F0_X(float3 col, float metalness, float lerpvalue)
+float3 F0_X(float lerpvalue, float3 col, float metalness)
 {
     return lerp(float3(lerpvalue, lerpvalue, lerpvalue), col, metalness);
-}
-
-// Normal distribution functions
-float trowbridgeReitzNDF(float NdotH, float roughness)
-{
-    float alpha = roughness * roughness;
-    float alpha2 = alpha * alpha;
-    float NdotH2 = NdotH * NdotH;
-    float denominator = PI * pow((alpha2 - 1) * NdotH2 + 1, 2);
-    return alpha2 / denominator;
-}
-
-float trowbridgeReitzAnisotropicNDF(float NdotH, float roughness, float anisotropy, float HdotT, float HdotB)
-{
-    float aspect = sqrt(1.0 - 0.9 * anisotropy);
-    float alpha = roughness * roughness;
-
-    float roughT = alpha / aspect;
-    float roughB = alpha * aspect;
-
-    float alpha2 = alpha * alpha;
-    float NdotH2 = NdotH * NdotH;
-    float HdotT2 = HdotT * HdotT;
-    float HdotB2 = HdotB * HdotB;
-
-    float denominator = PI * roughT * roughB * pow(HdotT2 / (roughT * roughT) + HdotB2 / (roughB * roughB) + NdotH2, 2);
-    return 1 / denominator;
 }
 
 // GGX
@@ -112,7 +112,7 @@ float cookTorranceGAF(float NdotH, float NdotV, float HdotV, float NdotL)
 float schlickBeckmannGAF(float dotProduct, float roughness)
 {
     float alpha = roughness * roughness;
-    float k = alpha * 0.797884560803;  // sqrt(2 / PI)
+    float k = alpha * 0.797884560803;  // 0.797884560803 = sqrt(2 / PI)
     return dotProduct / (dotProduct * (1 - k) + k);
 }
 
@@ -137,6 +137,8 @@ float G_GGX(float dotVN, float alphag)
     float b = dotVN * dotVN;
     return 1.0 / (dotVN + sqrt(a + b - a * b));
 }
+
+
 
 //-----------------------------------
 // Helpers

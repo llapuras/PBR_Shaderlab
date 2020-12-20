@@ -154,7 +154,6 @@
 
 				//迪士尼漫反射
 				float DisneyTerm = DisneyDiffuse(NdotV, NdotL, NdotH, roughness);
-				float4 disneyDiffuse = DisneyTerm; 
 
 				//D-法线分布函数
 				//float lerpSquareRoughness = pow(lerp(0.001, 1, roughness), 2);//Unity把roughness lerp到了0.002
@@ -172,7 +171,7 @@
 
 				//F-fresnel
 				//float3 F = lerp(F0(_Ior), diffColor, _Metallic) + (1 - lerp(F0(_Ior), diffColor, _Metallic)) * Pow5(1 - NdotV);
-				float3 F0 = lerp(float3(0.04, 0.04, 0.04), _FresnelColor * baseColor, metalness);
+				float3 F0 = lerp(float3(0.04, 0.04, 0.04), _FresnelColor, metalness);
 				float3 F = fresnel(F0, NdotV);
 
 				//漫反射系数

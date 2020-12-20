@@ -8,7 +8,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: Main
-  m_Shader: {fileID: 4800000, guid: c59b671139fed4b408d5627df872c73b, type: 3}
+  m_Shader: {fileID: 4800000, guid: 449e5908372f193498f18d82a81a0f57, type: 3}
   m_ShaderKeywords: AD_ON AF_ON AG_ON ENABLEDIFFUSE_ON ENABLESPECULAR_ON
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
@@ -76,7 +76,7 @@ Material:
     - EnableBasecolorMap: 1
     - EnableDiffuse: 1
     - EnableSpecular: 1
-    - _Anisotropy: 0.702
+    - _Anisotropy: 0.91
     - _BumpScale: 1
     - _Cutoff: 0.5
     - _DetailNormalMapScale: 1
@@ -85,18 +85,18 @@ Material:
     - _Glossiness: 0.5
     - _GlossyReflections: 1
     - _Ior: 0
-    - _Metallic: 0.578
+    - _Metallic: 0.66
     - _Metalness: 0.69
     - _Mode: 0
-    - _NDF: 1
+    - _NDF: 2
     - _OcclusionStrength: 1
     - _Parallax: 0.02
-    - _Roughness: 0.186
+    - _Roughness: 0.9
     - _Smoothness: 1
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
     - _SrcBlend: 1
-    - _Test: 0.01
+    - _Test: 0
     - _UVSec: 0
     - _ZWrite: 1
     - aD: 1
@@ -106,5 +106,5 @@ Material:
     - _AlbedoColor: {r: 1, g: 1, b: 1, a: 1}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
-    - _FresnelColor: {r: 0.6226415, g: 0.32381395, b: 0, a: 1}
+    - _FresnelColor: {r: 1, g: 0.6387665, b: 0.11792451, a: 1}
     - _Tint: {r: 1, g: 1, b: 1, a: 1}

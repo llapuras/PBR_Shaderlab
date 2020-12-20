@@ -138,39 +138,31 @@
 				float occlusion = (tex2D(_OcclusionMap, i.uv).r);
 
 				float4 baseColor = tex2D(_MainTex, i.uv) * _Tint;
-				float perceptualRoughness = roughness;
-				float squareRoughness = roughness * roughness;
 
 				// AdotB，emmm反正先排列组合全写上了要用啥拿啥吧
 				// 最小值设置0.00001是为了防止除数为0的情况报error
-				float NdotL = max(saturate(dot(i.normal, lightDir)), EPS);
-				float NdotH = max(saturate(dot(i.normal, halfVec)), EPS);
-				float HdotV = max(saturate(dot(halfVec, viewDir)), EPS);
-				float NdotV = max(saturate(dot(i.normal, viewDir)), EPS);
-				float HdotL = max(saturate(dot(halfVec, lightDir)), EPS);
-				float VdotH = max(saturate(dot(viewDir, halfVec)), EPS);
-				float HdotT = max(saturate(dot(halfVec, i.tangentLocal));
-				float HdotB = max(saturate(dot(halfVec, i.bitangentLocal));
+				float NdotL = max((dot(i.normal, lightDir)), EPS);
+				float NdotH = max((dot(i.normal, halfVec)), EPS);
+				float HdotV = max((dot(halfVec, viewDir)), EPS);
+				float NdotV = max((dot(i.normal, viewDir)), EPS);
+				float LdotH = max((dot(lightDir, halfVec)), EPS);
+				float VdotH = max((dot(viewDir, halfVec)), EPS);
+				float HdotT = dot(halfVec, i.tangentLocal);
+				float HdotB = dot(halfVec, i.bitangentLocal);
 
 				//迪士尼漫反射
 				float3 DisneyTerm = DisneyDiffuse(baseColor, HdotV, NdotV, NdotL, roughness);
 				
 				//D-法线分布函数，各向异性还没加上
-				float D = (_NDF == 1) ? D_GTR1(roughness, NdotH) : ((_NDF == 2) ? D_GTR2(roughness, NdotH) : D_GTR2(roughness, NdotH));
-				D = trowbridgeReitzAnisotropicNDF(NdotH, roughness, _Anisotropy, HdotT, HdotB);
+				float D = trowbridgeReitzAnisotropicNDF(NdotH, roughness, _Anisotropy, HdotT, HdotB);
 				
 				//G-遮蔽
-				/*float kInDirectLight = pow(squareRoughness + 1, 2) / 8;
-				float kInIBL = pow(squareRoughness, 2) / 8;
-				float GLeft = NdotL / lerp(NdotL, 1, kInDirectLight);
-				float GRight = NdotV / lerp(NdotV, 1, kInDirectLight);
-				float G = GLeft * GRight;
-				*/
 				float G = schlickBeckmannGAF(NdotV, roughness) * schlickBeckmannGAF(NdotL, roughness);
 
 				//F-fresnel
 				float3 F0 = F0_X(_Test, _FresnelColor, metalness);
-				float3 F = fresnel(F0, HdotV) * (_FresnelColor + EPS);
+				//float3 F0 = lerp(float3(0.04, 0.04, 0.04), _FresnelColor, metalness);
+				float3 F = fresnel(F0, NdotV);
 
 				//漫反射系数
 				float3 kd = (1 - F) * (1 - metalness);
@@ -178,11 +170,11 @@
 				float3 Gterm = ((G * aG != 0) ? G : 1);
 				float3 Dterm = ((D * aD != 0) ? D : 1);
 				float3 Fterm = ((F * aF != 0) ? F : 1);
-				float3 SpecularResult = (aD + aF + aG == 0 ? 0 : (Gterm * Dterm * Fterm) / (4 * NdotV * NdotL + 0.0001));
+				float3 SpecularResult = (aD + aF + aG == 0 ? 0 : (Gterm * Dterm * Fterm * 0.25) / (NdotV * NdotL));
 
-				float3 diffColor_result = kd * DisneyTerm * EnableDiffuse * lightColor;
-				float3 specColor_result = SpecularResult * EnableSpecular * lightColor;
-				float3 DirectLightResult = (diffColor_result + specColor_result);
+				float3 diffColor_result = kd * max(dot(normal, lightDir), 0.0) * EnableDiffuse * lightColor * baseColor * PI;
+				float3 specColor_result = SpecularResult * EnableSpecular * lightColor * baseColor * PI;
+				float3 DirectLightResult = diffColor_result + specColor_result;
 
 				float3 iblDiffuseResult = 0;
 				float3 iblSpecularResult = 0;
