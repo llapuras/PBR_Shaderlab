@@ -66,7 +66,6 @@ float trowbridgeReitzAnisotropicNDF(float NdotH, float roughness, float anisotro
 }
 
 
-
 // 漫反射
 // 普通lambert
 float3 lambertDiffuse(float3 albedo)

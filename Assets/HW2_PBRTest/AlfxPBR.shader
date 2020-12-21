@@ -6,6 +6,7 @@
 		[Header(Parameters)]
 		[MaterialToggle] EnableDiffuse("Enable Diffuse", Float) = 1
 	    [MaterialToggle] EnableSpecular("Enable Specular", Float) = 1
+	    [MaterialToggle] EnableSH("Enable SH", Float) = 1
 		_NDF("NDF mode", Int) = 1
 
 		[Header(Debug Mode)]
@@ -92,7 +93,7 @@
 			float _Test;
 
 			//para
-			int EnableDiffuse, EnableSpecular, aD, aF, aG, DebugNormalMode;
+			int EnableDiffuse, EnableSpecular, aD, aF, aG, DebugNormalMode, EnableSH;
 
 			v2f vert(appdata v)
 			{
@@ -115,7 +116,7 @@
 
 			float4 frag(v2f i) : SV_Target
 			{
-				//realtime light AO
+				//realtime light shadow
 				float shadow = SHADOW_ATTENUATION(i);
 
 				//光照、视线、半角
@@ -133,11 +134,12 @@
 				float3 reflectVec = -reflect(viewDir, normal);
 
 				// This assumes that the maximum param is right if both are supplied (range and map)
-				float roughness = (saturate(_Roughness + EPS + tex2D(_RoughnessMap, i.uv)).r) + EPS;
-				float metalness = (saturate(_Metallic + EPS + tex2D(_MetalnessMap, i.uv)).r);
+				float roughness = max(_Roughness + EPS, tex2D(_RoughnessMap, i.uv).r) + EPS;
+				float metalness = max(_Metallic + EPS, tex2D(_MetalnessMap, i.uv).r) + EPS;
 				float occlusion = (tex2D(_OcclusionMap, i.uv).r);
 
 				float4 baseColor = tex2D(_MainTex, i.uv) * _Tint;
+				float4 albedo = baseColor * (1.0 - metalness);
 
 				// AdotB，emmm反正先排列组合全写上了要用啥拿啥吧
 				// 最小值设置0.00001是为了防止除数为0的情况报error
@@ -160,7 +162,7 @@
 				float G = schlickBeckmannGAF(NdotV, roughness) * schlickBeckmannGAF(NdotL, roughness);
 
 				//F-fresnel
-				float3 F0 = F0_X(_Test, _FresnelColor, metalness);
+				float3 F0 = F0_X(0.04, _FresnelColor, metalness);
 				//float3 F0 = lerp(float3(0.04, 0.04, 0.04), _FresnelColor, metalness);
 				float3 F = fresnel(F0, NdotV);
 
@@ -176,7 +178,22 @@
 				float3 specColor_result = SpecularResult * EnableSpecular * lightColor * baseColor * PI;
 				float3 DirectLightResult = diffColor_result + specColor_result;
 
-				float3 iblDiffuseResult = 0;
+
+				//------------------------------------------
+				//indirectal light
+				//skylight - 在亮处看不是很明显，在背光处始终会有点亮度，过渡更自然
+				float3 skyLightBand2 = SHEvalLinearL0L1(float4(i.normal, 1));
+				float3 skyLightBand3 = ShadeSH9(float4(i.normal, 1));
+				float3 ambient = _Test * albedo;
+				float3 iblDiffuse = skyLightBand3 + ambient; // *ao;//这里还要加ao！记得加上！
+
+				/*half3 ambient_contrib = ShadeSH9(float4(i.normal, 1));
+				float3 ambient = 0.03 * albedo;
+				float3 iblDiffuse = max(half3(0, 0, 0), ambient.rgb + ambient_contrib);
+				float kdLast = 1;*/
+				float3 iblDiffuseResult = (EnableSH == 1) ? iblDiffuse : 0;
+			
+				
 				float3 iblSpecularResult = 0;
 				float3 IndirectResult = iblDiffuseResult + iblSpecularResult;
 	
