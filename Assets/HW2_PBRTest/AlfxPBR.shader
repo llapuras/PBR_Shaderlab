@@ -7,7 +7,6 @@
 	    [MaterialToggle] EnableSpecular("Enable Specular", Float) = 1
 	    [MaterialToggle] EnableSH("Enable Sphereric Harmonics", Float) = 1
 		[MaterialToggle] EnableShadow("Enable Self Shadow", Float) = 1
-		[MaterialToggle] IsAniotropy("Is Aniotropy", Float) = 1
 		_NDF("NDF mode", Int) = 1
 
 		[MaterialToggle] DebugNormalMode("Debug Normal Mode", Float) = 0
@@ -29,7 +28,10 @@
 
 		_Metallic("Metallic", Range(0, 1)) = 0
 		_Roughness("Roughness", Range(0, 1)) = 0.5
+
+		[MaterialToggle] IsAnisotropy("Is Anisotropy", Float) = 1
 		_Anisotropy("Anisotropy", Range(0,1)) = 0
+
 		_BrdfMap("BRDF Map", 2D) = "white" {}
 
 		[Header(TestProp)]
@@ -60,7 +62,6 @@
 			#pragma multi_compile_fwdbase
 			#include "AutoLight.cginc" 
 
-
 			struct appdata
 			{
 				float4 vertex : POSITION;
@@ -71,7 +72,7 @@
 
 			struct v2f
 			{
-				float4 pos : SV_POSITION; //要用unity那套shadow这里必须命名pos不然会报错 = - =
+				float4 pos : SV_POSITION; //要用unity那套shadow这里必须按appdata_base的结构命名为pos不然会报错 = - =
 				float2 uv : TEXCOORD0;
 				float3 normal : TEXCOORD1;
 				float3 tangent: TEXCOORD2;
@@ -82,7 +83,7 @@
 				float3 bitangentLocal: TEXCOORD6;
 
 				LIGHTING_COORDS(7, 8)
-					//SHADOW_COORDS(5) //put shadows data into TEXCOORD1
+				//SHADOW_COORDS(5) //put shadows data into TEXCOORD1
 				};
 
 				float4 _Tint, _FresnelColor;
@@ -95,7 +96,7 @@
 				float _Test;
 
 				//para
-				int EnableDiffuse, EnableSpecular, aD, aF, aG, DebugNormalMode, EnableSH, EnableShadow, IsAniotropy;
+				int EnableDiffuse, EnableSpecular, aD, aF, aG, DebugNormalMode, EnableSH, EnableShadow, IsAnisotropy;
 
 				v2f vert(appdata v)
 				{
@@ -123,7 +124,6 @@
 
 				float4 frag(v2f i) : COLOR
 				{
-
 					//光照、视线、半角
 					float3 lightDir = normalize(_WorldSpaceLightPos0.xyz);
 					float3 viewDir = normalize(_WorldSpaceCameraPos - i.worldPos);
@@ -152,8 +152,8 @@
 					float NdotV = max((dot(i.normal, viewDir)), EPS);
 					float HdotL = max((dot(halfVec, lightDir)), EPS);
 					float VdotH = max((dot(viewDir, halfVec)), EPS);
-					float HdotT = dot(halfVec, i.tangentLocal);
-					float HdotB = dot(halfVec, i.bitangentLocal);
+					float HdotT = max(dot(halfVec, i.tangentLocal), EPS);
+					float HdotB = max(dot(halfVec, i.bitangentLocal), EPS);
 
 					//----------------------------------------
 					//迪士尼漫反射
@@ -161,17 +161,16 @@
 
 					//----------------------------------------
 					//D-法线分布函数
-					float D1 = trowbridgeReitzAnisotropicNDF(NdotH, roughness, _Anisotropy, HdotT, HdotB);
-					float D2 = trowbridgeReitzNDF(NdotH, roughness);
-					float D = (IsAniotropy == 1) ? D1 : D2;
+					float D1 = AnisotropyNDF(NdotH, roughness, _Anisotropy, HdotT, HdotB);
+					float D2 = IsotropyNDF(NdotH, roughness);
+					float D = (IsAnisotropy == 1) ? D1 : D2;
 
 					//G-遮蔽
-					float G = schlickBeckmannGAF(NdotV, roughness) * schlickBeckmannGAF(NdotL, roughness);
+					float G = schlickBeckmannGAF(NdotL, NdotV, roughness);
 
 					//F-fresnel
 					float3 F0 = F0_X(0.04, _FresnelColor, metalness);
-					//float3 F0 = lerp(float3(0.04, 0.04, 0.04), _FresnelColor, metalness);
-					float3 F = fresnel(F0, HdotV);
+		    		float3 F = fresnel(F0, HdotV);
 
 					//漫反射系数
 					float3 kd = (1 - F) * (1 - metalness);
@@ -186,28 +185,34 @@
 					float3 DirectLightResult = diffColor_result + specColor_result;
 
 					//----------------------------------------
-					//indirectal light
-					//ibldiffuse: SH skylight
-					float3 ambient = SH3band(i.normal, albedo);
-					float3 iblDiffuseResult = (EnableSH == 1) ? ambient : 0;
-
-					// iblspecular
+					// indirectal light
+					// ibldiffuse
+					// SH skylight
+					float3 ambient = SH3band(i.normal, albedo, 3);
+					
 					// BRDF integration Map
 					float2 brdfUV = float2(NdotV, _Roughness);
 					float2 envBRDF = tex2D(_BrdfMap, brdfUV).xy;
+					float3 Flast = fresnelSchlickRoughness(max(NdotV, 0.0), F0, roughness);
+					float kdLast = (1 - Flast) * (1 - _Metallic);
+
 					float mip_roughness = roughness * (1.7 - 0.7 * roughness);
 					float3 reflectVec = reflect(-viewDir, i.normal);
 					half mip = mip_roughness * UNITY_SPECCUBE_LOD_STEPS;
-					float3 envSample = UNITY_SAMPLE_TEXCUBE_LOD(unity_SpecCube0, reflectVec, mip);
-					float3 iblSpecular = envSample;
+					float3 envSample = UNITY_SAMPLE_TEXCUBE_LOD(unity_SpecCube0, reflectVec, mip);//获取当前使用env贴图
+					
+					float3 iblDiffuseResult = (EnableSH == 1) ? ambient * kdLast * albedo : 0;
+
+					// iblspecular
+					float3 iblSpecular = 0;
 
 					float3 iblSpecularResult = iblSpecular;
 
-					//indirect specular
+					// indirect specular
 					float3 IndirectResult = iblDiffuseResult + iblSpecularResult;
 
-					//realtime light shadow
-					//float shadow = SHADOW_ATTENUATION(i);
+					// realtime light shadow
+					// float shadow = SHADOW_ATTENUATION(i);
 					float attenuation = LIGHT_ATTENUATION(i) * 1;
 					float3 attenColor = (EnableShadow == 1) ? attenuation : 1;
 
