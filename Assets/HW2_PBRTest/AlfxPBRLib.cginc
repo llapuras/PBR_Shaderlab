@@ -1,5 +1,5 @@
 ﻿#define PI 3.14159265359
-#define EPS 0.00001
+#define EPS 0.0001
 
 float Pow4(float v)
 {
@@ -67,19 +67,13 @@ float trowbridgeReitzAnisotropicNDF(float NdotH, float roughness, float anisotro
 
 
 // 漫反射
-// 普通lambert
-float3 lambertDiffuse(float3 albedo)
+// Disney漫反射
+float3 DisneyDiffuse(float3 col, float HdotV, float NdotV, float NdotL, float roughness)
 {
-    return albedo / PI;
-}
-
-//Disney漫反射
-float3 DisneyDiffuse(float3 col, float HdotL, float NdotL, float NdotV, float roughness)
-{
-    float F90 = 0.5 + 2 * roughness * HdotL * HdotL;
+    float F90 = 0.5 + 2 * roughness * HdotV * HdotV;
     float FdV = 1 + (F90 - 1) * Pow5(1 - NdotV);
     float FdL = 1 + (F90 - 1) * Pow5(1 - NdotL);
-    return FdV * FdL * col; //虽然按理说应该除以PI，但是颜色会变得很暗很暗，反正Unity没除
+    return F90;// col* ((1 / PI) * FdV * FdL);
 }
 
 // Schlick Fresnel
@@ -137,7 +131,14 @@ float G_GGX(float dotVN, float alphag)
     return 1.0 / (dotVN + sqrt(a + b - a * b));
 }
 
-
+//SH
+float3 SH3band(float3 normal, float3 albedo) 
+{
+    float3 skyLightBand2 = SHEvalLinearL0L1(float4(normal, 1));
+    float3 skyLightBand3 = ShadeSH9(float4(normal, 1));
+    float3 ambient = 0.05 * albedo;
+    return skyLightBand3 + ambient; // *ao;//这里还要加ao！记得加上！
+}
 
 //-----------------------------------
 // Helpers

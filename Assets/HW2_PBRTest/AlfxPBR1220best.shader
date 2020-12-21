@@ -1,4 +1,4 @@
-﻿Shader "Alfx/AlfxPBR_best"
+﻿Shader "Alfx/AlfxPBR"
 {
 	//按照rtr书上的公式版本进行实现
 	Properties
@@ -6,6 +6,8 @@
 		[Header(Parameters)]
 		[MaterialToggle] EnableDiffuse("Enable Diffuse", Float) = 1
 	    [MaterialToggle] EnableSpecular("Enable Specular", Float) = 1
+	    [MaterialToggle] EnableSH("Enable SH", Float) = 1
+		_NDF("NDF mode", Int) = 1
 
 		[Header(Debug Mode)]
 		[MaterialToggle] DebugNormalMode("Debug Normal Mode", Float) = 0
@@ -14,8 +16,6 @@
 		[MaterialToggle] aD("D", Float) = 1
         [MaterialToggle] aF("F", Float) = 1
 	    [MaterialToggle] aG("G", Float) = 1
-
-		_Ior("IOR", Range(0, 1)) = 1
 
 		[Header(Textures)]
 		_MainTex("Basecolor Map", 2D) = "white" {}
@@ -31,6 +31,9 @@
 		_Roughness("Roughness", Range(0, 1)) = 0.5
 		_Anisotropy("Anisotropy", Range(0,1)) = 0
 		_LUT("LUT", 2D) = "white" {}
+
+		[Header(TestProp)]
+		_Test("test", Range(0, 1)) = 0
 	}
 
 	SubShader
@@ -81,13 +84,16 @@
 
 			float4 _Tint, _FresnelColor;
 			float _Metallic, _Roughness, _Anisotropy;
-			float _Ior;
+			float _NDF;
 			sampler2D _MainTex, _RoughnessMap, _NormalMap, _MetalnessMap, _OcclusionMap;
 			float4 _MainTex_ST, _RoughnessMap_ST, _NormalMap_ST, _MetalnessMap_ST, _OcclusionMap_ST;
 			sampler2D _LUT;
 
+			//test
+			float _Test;
+
 			//para
-			int EnableDiffuse, EnableSpecular, aD, aF, aG, DebugNormalMode;
+			int EnableDiffuse, EnableSpecular, aD, aF, aG, DebugNormalMode, EnableSH;
 
 			v2f vert(appdata v)
 			{
@@ -110,7 +116,7 @@
 
 			float4 frag(v2f i) : SV_Target
 			{
-				//realtime light AO
+				//realtime light shadow
 				float shadow = SHADOW_ATTENUATION(i);
 
 				//光照、视线、半角
@@ -121,23 +127,17 @@
 
 				//normal map
 				float3x3 TBN = transpose(float3x3(i.tangent, i.bitangent, i.normal));
-				float3 tangentNormal = tex2D(_NormalMap, i.uv).xyz;
+				float3 tangentNormal = UnpackNormal(tex2D(_NormalMap, i.uv)); //！！！不要忘记unpack= - =
 				float3 normal = mul(TBN, normalize(tangentNormal));
-
-				//...
-				float3 reflectVec = -reflect(viewDir, normal);
-
-				i.normal.xyz = normal.xyz;
-
+				//i.normal.xyz = normal.xyz;
 
 				// This assumes that the maximum param is right if both are supplied (range and map)
-				float roughness = (max(_Roughness + EPS, tex2D(_RoughnessMap, i.uv)).r);
-				float metalness = (max(_Metallic + EPS, tex2D(_MetalnessMap, i.uv)).r);
+				float roughness = max(_Roughness + EPS, tex2D(_RoughnessMap, i.uv).r) + EPS;
+				float metalness = max(_Metallic + EPS, tex2D(_MetalnessMap, i.uv).r) + EPS;
 				float occlusion = (tex2D(_OcclusionMap, i.uv).r);
 
 				float4 baseColor = tex2D(_MainTex, i.uv) * _Tint;
-				//float perceptualRoughness = _Roughness;			
-				//float squareRoughness = roughness * roughness;
+				float4 albedo = baseColor * (1.0 - metalness);// *occlusion;
 
 				// AdotB，emmm反正先排列组合全写上了要用啥拿啥吧
 				// 最小值设置0.00001是为了防止除数为0的情况报error
@@ -150,30 +150,22 @@
 				float HdotT = dot(halfVec, i.tangentLocal);
 				float HdotB = dot(halfVec, i.bitangentLocal);
 
-				float lightIntensity = NdotL > 0 ? 1 : 0;
-
+				//----------------------------------------
 				//迪士尼漫反射
-				float DisneyTerm = DisneyDiffuse(NdotV, NdotL, NdotH, roughness);
-				float4 disneyDiffuse = DisneyTerm; 
-
+				float3 DisneyTerm = DisneyDiffuse(baseColor, HdotV, NdotV, NdotL, roughness) * albedo;
+				
+				//----------------------------------------
 				//D-法线分布函数
-				//float lerpSquareRoughness = pow(lerp(0.001, 1, roughness), 2);//Unity把roughness lerp到了0.002
-				//float D = lerpSquareRoughness / (pow((pow(NdotH, 2) * (lerpSquareRoughness - 1) + 1), 2));// *PI);
-				float D = trowbridgeReitzNDF(NdotH, roughness);
-				D = trowbridgeReitzAnisotropicNDF(NdotH, roughness, _Anisotropy, HdotT, HdotB);
+				float D = trowbridgeReitzAnisotropicNDF(NdotH, roughness, _Anisotropy, HdotT, HdotB);
+				D = trowbridgeReitzNDF(NdotH, roughness);
 
 				//G-遮蔽
-				/*float kInDirectLight = pow(squareRoughness + 1, 2) / 8;
-				float kInIBL = pow(squareRoughness, 2) / 8;
-				float GLeft = NdotL / lerp(NdotL, 1, kInDirectLight);
-				float GRight = NdotV / lerp(NdotV, 1, kInDirectLight);
-				float G = GLeft * GRight;*/
 				float G = schlickBeckmannGAF(NdotV, roughness) * schlickBeckmannGAF(NdotL, roughness);
 
 				//F-fresnel
-				//float3 F = lerp(F0(_Ior), diffColor, _Metallic) + (1 - lerp(F0(_Ior), diffColor, _Metallic)) * Pow5(1 - NdotV);
-				float3 F0 = lerp(float3(0.04, 0.04, 0.04), _FresnelColor * baseColor, metalness);
-				float3 F = fresnel(F0, NdotV);
+				float3 F0 = F0_X(0.04, _FresnelColor, metalness);
+				//float3 F0 = lerp(float3(0.04, 0.04, 0.04), _FresnelColor, metalness);
+				float3 F = fresnel(F0, HdotV);
 
 				//漫反射系数
 				float3 kd = (1 - F) * (1 - metalness);
@@ -183,16 +175,30 @@
 				float3 Fterm = ((F * aF != 0) ? F : 1);
 				float3 SpecularResult = (aD + aF + aG == 0 ? 0 : (Gterm * Dterm * Fterm * 0.25) / (NdotV * NdotL));
 
-				float3 diffColor_result = kd * max(dot(normal, lightDir), 0.0) * EnableDiffuse * lightColor * baseColor * PI;
-				float3 specColor_result = SpecularResult * EnableSpecular * lightColor * baseColor * PI;
+				float3 diffColor_result = kd * NdotL * EnableDiffuse * lightColor * albedo;
+				float3 specColor_result = SpecularResult * EnableSpecular * lightColor * albedo;
 				float3 DirectLightResult = diffColor_result + specColor_result;
 
-				float3 iblDiffuseResult = 0;
-				float3 iblSpecularResult = 0;
+				//----------------------------------------
+				//indirectal light
+				//ibldiffuse: SH skylight
+				float3 iblDiffuse = SH3band(i.normal, albedo);
+				float3 iblDiffuseResult = (EnableSH == 1) ? iblDiffuse : 0;
+				
+				//iblspecular
+				float2 brdfUV = float2(NdotV, _Roughness);
+				float2 preBRDF = tex2D(_LUT, brdfUV).xy;
+				float mip_roughness = roughness * (1.7 - 0.7 * roughness);
+				float3 reflectVec = reflect(-viewDir, i.normal);
+				half mip = mip_roughness * UNITY_SPECCUBE_LOD_STEPS;
+				float3 envSample = UNITY_SAMPLE_TEXCUBE_LOD(unity_SpecCube0, reflectVec, mip);
+				float3 iblSpecular = envSample;// DecodeHDR(envSample, unity_SpecCube0_HDR);
+
+				float3 iblSpecularResult = iblSpecular;
 				float3 IndirectResult = iblDiffuseResult + iblSpecularResult;
 	
 				float4 result = float4(DirectLightResult + IndirectResult, 1);
-				result.xyz = (DebugNormalMode == 1) ? normal * 0.5 + 0.5 : result.xyz;
+				result.xyz = (DebugNormalMode == 1) ? i.normal * 0.5 + 0.5 : result.xyz;
 				return float4((result.xyz), 1.0);
 			}
 

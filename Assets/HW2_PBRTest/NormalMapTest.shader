@@ -83,5 +83,5 @@ Shader "ApcShader/NormalMap"
 
 		}
 			//前面的Shader失效的话，使用默认的Diffuse
-			FallBack "Diffuse"
+			FallBack "Standard"
 }
