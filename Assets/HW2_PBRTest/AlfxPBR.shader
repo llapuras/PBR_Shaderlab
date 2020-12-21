@@ -59,7 +59,6 @@
 			//#include "UnityStandardBRDF.cginc" 
 			#include "AlfxPBRLib.cginc"
 			#include "Lighting.cginc"
-			#pragma multi_compile_fwdbase
 			#include "AutoLight.cginc" 
 
 			struct appdata
@@ -137,8 +136,8 @@
 					i.normal = normal;
 
 					// This assumes that the maximum param is right if both are supplied (range and map)
-					float roughness = max(_Roughness + EPS, tex2D(_RoughnessMap, i.uv).r);
-					float metalness = max(_Metallic + EPS, tex2D(_MetalnessMap, i.uv).r);
+					float roughness = max(max(_Roughness, tex2D(_RoughnessMap, i.uv).r), EPS);
+					float metalness = max(max(_Metallic + EPS, tex2D(_MetalnessMap, i.uv).r), EPS);
 					float occlusion = (tex2D(_OcclusionMap, i.uv).r);
 
 					float4 baseColor = tex2D(_MainTex, i.uv) * _Tint;
@@ -151,13 +150,12 @@
 					float HdotV = max((dot(halfVec, viewDir)), EPS);
 					float NdotV = max((dot(i.normal, viewDir)), EPS);
 					float HdotL = max((dot(halfVec, lightDir)), EPS);
-					float VdotH = max((dot(viewDir, halfVec)), EPS);
-					float HdotT = max(dot(halfVec, i.tangentLocal), EPS);
-					float HdotB = max(dot(halfVec, i.bitangentLocal), EPS);
+					float HdotT = dot(halfVec, i.tangentLocal);
+					float HdotB = dot(halfVec, i.bitangentLocal);
 
 					//----------------------------------------
 					//迪士尼漫反射
-					float3 DisneyTerm = DisneyDiffuse(albedo, VdotH, HdotV, HdotL, roughness);
+					float3 DisneyTerm = DisneyDiffuse(albedo, NdotV, NdotL, HdotV, roughness);
 
 					//----------------------------------------
 					//D-法线分布函数
@@ -169,8 +167,9 @@
 					float G = schlickBeckmannGAF(NdotL, NdotV, roughness);
 
 					//F-fresnel
-					float3 F0 = F0_X(0.04, _FresnelColor, metalness);
+					float3 F0 = F0_X(0.1, _FresnelColor, metalness);
 		    		float3 F = fresnel(F0, HdotV);
+					//F = F0 + (1 - F0) * exp2((-5.55473 * VdotH - 6.98316) * VdotH);
 
 					//漫反射系数
 					float3 kd = (1 - F) * (1 - metalness);

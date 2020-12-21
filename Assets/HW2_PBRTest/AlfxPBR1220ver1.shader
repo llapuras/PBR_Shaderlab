@@ -3,10 +3,11 @@
 	//按照rtr书上的公式版本进行实现
 	Properties
 	{
-		[Header(Parameters)]
+		[Header(Debug Mode)]
 		[MaterialToggle] EnableDiffuse("Enable Diffuse", Float) = 1
 		[MaterialToggle] EnableSpecular("Enable Specular", Float) = 1
 		[MaterialToggle] EnableSH("Enable SH", Float) = 1
+		[MaterialToggle] EnableShadow("Enable Self Shadow", Float) = 1
 		_NDF("NDF mode", Int) = 1
 
 		[Header(Debug Mode)]
@@ -29,6 +30,8 @@
 
 		_Metallic("Metallic", Range(0, 1)) = 0
 		_Roughness("Roughness", Range(0, 1)) = 0.5
+
+		[MaterialToggle] IsAnisotropy("Is Anisotropy", Float) = 1
 		_Anisotropy("Anisotropy", Range(0,1)) = 0
 		_LUT("LUT", 2D) = "white" {}
 
@@ -48,9 +51,8 @@
 				}
 				CGPROGRAM
 
-
 				#pragma target 3.0
-
+				#pragma multi_compile_fwdbase
 				#pragma vertex vert
 				#pragma fragment frag
 
@@ -69,7 +71,7 @@
 
 				struct v2f
 				{
-					float4 vertex : SV_POSITION;
+					float4 pos : SV_POSITION;
 					float2 uv : TEXCOORD0;
 					float3 normal : TEXCOORD1;
 					float3 tangent: TEXCOORD2;
@@ -79,7 +81,7 @@
 					float3 tangentLocal: TEXCOORD5;
 					float3 bitangentLocal: TEXCOORD6;
 
-					SHADOW_COORDS(5)//实时光遮蔽
+					LIGHTING_COORDS(7, 8)//for shadow
 				};
 
 				float4 _Tint, _FresnelColor;
@@ -93,12 +95,12 @@
 				float _Test;
 
 				//para
-				int EnableDiffuse, EnableSpecular, aD, aF, aG, DebugNormalMode, EnableSH;
+				int EnableDiffuse, EnableSpecular, aD, aF, aG, DebugNormalMode, EnableShadow, EnableSH, IsAnisotropy;
 
 				v2f vert(appdata v)
 				{
 					v2f o;
-					o.vertex = UnityObjectToClipPos(v.vertex);
+					o.pos = UnityObjectToClipPos(v.vertex);
 					o.worldPos = mul(unity_ObjectToWorld, v.vertex);
 					o.uv = TRANSFORM_TEX(v.uv, _MainTex);
 
@@ -107,10 +109,10 @@
 					o.normal = normalize(UnityObjectToWorldNormal(v.normal));
 					o.bitangent = normalize(cross(o.normal, o.tangent.xyz));
 
-					o.tangentLocal = v.tangent;
+					o.tangentLocal = o.tangent;
 					o.bitangentLocal = normalize(cross(o.normal, o.tangentLocal));
 
-					TRANSFER_SHADOW(o);
+					TRANSFER_VERTEX_TO_FRAGMENT(o);
 					return o;
 				}
 
@@ -129,7 +131,7 @@
 				float3x3 TBN = transpose(float3x3(i.tangent, i.bitangent, i.normal));
 				float3 tangentNormal = UnpackNormal(tex2D(_NormalMap, i.uv)); //！！！不要忘记unpack= - =
 				float3 normal = mul(TBN, normalize(tangentNormal));
-				//i.normal.xyz = normal.xyz;
+					i.normal = normal;
 
 				// This assumes that the maximum param is right if both are supplied (range and map)
 				float roughness = max(_Roughness + EPS, tex2D(_RoughnessMap, i.uv).r) + EPS;
@@ -158,7 +160,7 @@
 				//D-法线分布函数
 				float D1 = AnisotropyNDF(NdotH, roughness, _Anisotropy, HdotT, HdotB);
 				float D2 = IsotropyNDF(NdotH, roughness);
-				float D = D2;
+				float D = (IsAnisotropy == 1) ? D1 : D2;
 
 				//G-遮蔽
 				float G = schlickBeckmannGAF(NdotL, NdotV, roughness);
@@ -177,14 +179,15 @@
 				float3 SpecularResult = (aD + aF + aG == 0 ? 0 : (Gterm * Dterm * Fterm * 0.25) / (NdotV * NdotL));
 
 				float3 diffColor_result = kd * NdotL * EnableDiffuse * lightColor * albedo;
+				diffColor_result = kd * DisneyTerm * EnableDiffuse * lightColor * albedo;
 				float3 specColor_result = SpecularResult * EnableSpecular * lightColor * albedo;
 				float3 DirectLightResult = diffColor_result + specColor_result;
 
 				//----------------------------------------
 				//indirectal light
 				//ibldiffuse: SH skylight
-				float3 iblDiffuse = SH3band(i.normal, albedo, 3);
-				float3 iblDiffuseResult = iblDiffuse;// (EnableSH == 1) ? iblDiffuse : 0;
+				float3 ambient = SH3band(i.normal, albedo, 3);
+				float3 iblDiffuseResult = ambient;// (EnableSH == 1) ? iblDiffuse : 0;
 
 				//iblspecular
 				float2 brdfUV = float2(NdotV, _Roughness);
@@ -198,12 +201,16 @@
 				float3 iblSpecularResult = iblSpecular;
 				float3 IndirectResult = iblDiffuseResult + iblSpecularResult;
 
-				float4 result = float4(DirectLightResult + IndirectResult, 1);
+				float attenuation = LIGHT_ATTENUATION(i) * 1;
+				float3 attenColor = (EnableShadow == 1) ? attenuation : 1;
+
+				float4 result = float4((DirectLightResult + IndirectResult) * attenColor, 1);
 				result.xyz = (DebugNormalMode == 1) ? i.normal * 0.5 + 0.5 : result.xyz;
 				return float4((result.xyz), 1.0);
 			}
 
 			ENDCG
 		}
-		}
+	}
+	FallBack "Legacy Shaders/Diffuse" //借用一个现成的shader，告知接受阴影
 }

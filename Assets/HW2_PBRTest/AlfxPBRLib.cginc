@@ -40,7 +40,7 @@ float D_GTR2_aniso(float dotHX, float dotHY, float dotNH, float ax, float ay)
 }
 
 // Normal distribution functions
-float trowbridgeReitzNDF(float NdotH, float roughness)
+float IsotropyNDF(float NdotH, float roughness)
 {
     float alpha = Pow4(roughness);
     float NdotH2 = NdotH * NdotH;
@@ -48,7 +48,7 @@ float trowbridgeReitzNDF(float NdotH, float roughness)
     return alpha / denominator;
 }
 
-float trowbridgeReitzAnisotropicNDF(float NdotH, float roughness, float anisotropy, float HdotT, float HdotB)
+float AnisotropyNDF(float NdotH, float roughness, float anisotropy, float HdotT, float HdotB)
 {
     float aspect = sqrt(1.0 - 0.9 * anisotropy);
     float alpha = roughness * roughness;
@@ -65,7 +65,6 @@ float trowbridgeReitzAnisotropicNDF(float NdotH, float roughness, float anisotro
     return 1 / denominator;
 }
 
-
 // 漫反射
 // Disney漫反射
 float3 DisneyDiffuse(float3 col, float HdotV, float NdotV, float NdotL, float roughness)
@@ -73,7 +72,7 @@ float3 DisneyDiffuse(float3 col, float HdotV, float NdotV, float NdotL, float ro
     float F90 = 0.5 + 2 * roughness * HdotV * HdotV;
     float FdV = 1 + (F90 - 1) * Pow5(1 - NdotV);
     float FdL = 1 + (F90 - 1) * Pow5(1 - NdotL);
-    return FdV * FdL;
+    return FdV * FdL / PI;
 }
 
 // Schlick Fresnel
@@ -82,11 +81,10 @@ float3 fresnel(float3 F0, float NdotV)
     return F0 + (1 - F0) * Pow5(1 - NdotV);
 }
 
-//fresnel的F0，这里是按照公式手动定义ior的公式，实际未用到
-//float3 F0(float ior)
-//{
-//    return pow((ior - 1.0) / (ior + 1.0), 2);
-//}
+float3 fresnelSchlickRoughness(float cosTheta, float3 F0, float roughness)
+{
+    return F0 + (max(float3(1.0 - roughness, 1.0 - roughness, 1.0 - roughness), F0) - F0) * pow(1.0 - cosTheta, 5.0);
+}
 
 //添加了lerp，不过好像没太大差别
 float3 F0_X(float lerpvalue, float3 col, float metalness)
@@ -102,11 +100,13 @@ float cookTorranceGAF(float NdotH, float NdotV, float HdotV, float NdotL)
     return min(1, min(firstTerm, secondTerm));
 }
 
-float schlickBeckmannGAF(float dotProduct, float roughness)
+float schlickBeckmannGAF(float NdotL, float NdotV, float roughness)
 {
-    float alpha = roughness * roughness;
-    float k = alpha * 0.797884560803;  // 0.797884560803 = sqrt(2 / PI)
-    return dotProduct / (dotProduct * (1 - k) + k);
+    float kInDirectLight = pow(Pow4(roughness) + 1, 2) / 8;
+    float kInIBL = pow(Pow4(roughness), 2) / 8;
+    float GLeft = NdotL / lerp(NdotL, 1, kInDirectLight);
+    float GRight = NdotV / lerp(NdotV, 1, kInDirectLight);
+    return GLeft * GRight;
 }
 
 // Smith GGX G项，各项同性版本
@@ -132,11 +132,11 @@ float G_GGX(float dotVN, float alphag)
 }
 
 //SH
-float3 SH3band(float3 normal, float3 albedo) 
+float3 SH3band(float3 normal, float3 albedo, int band) 
 {
     float3 skyLightBand2 = SHEvalLinearL0L1(float4(normal, 1));
     float3 skyLightBand3 = ShadeSH9(float4(normal, 1));
-    return skyLightBand3 * albedo;
+    return ((band == 2)? skyLightBand2 : skyLightBand3) * albedo * 50; //*50加大天光影响
 }
 
 //-----------------------------------
