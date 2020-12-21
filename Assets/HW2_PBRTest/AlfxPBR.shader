@@ -2,13 +2,14 @@
 {
 	Properties
 	{   
-		[Header(Parameters)]
+		[Header(Debug Mode)]
 		[MaterialToggle] EnableDiffuse("Enable Diffuse", Float) = 1
 	    [MaterialToggle] EnableSpecular("Enable Specular", Float) = 1
-	    [MaterialToggle] EnableSH("Enable SH", Float) = 1
+	    [MaterialToggle] EnableSH("Enable Sphereric Harmonics", Float) = 1
+		[MaterialToggle] EnableShadow("Enable Self Shadow", Float) = 1
+		[MaterialToggle] IsAniotropy("Is Aniotropy", Float) = 1
 		_NDF("NDF mode", Int) = 1
 
-		[Header(Debug Mode)]
 		[MaterialToggle] DebugNormalMode("Debug Normal Mode", Float) = 0
 
 		[Header(BDRF)]
@@ -29,7 +30,7 @@
 		_Metallic("Metallic", Range(0, 1)) = 0
 		_Roughness("Roughness", Range(0, 1)) = 0.5
 		_Anisotropy("Anisotropy", Range(0,1)) = 0
-		_LUT("LUT", 2D) = "white" {}
+		_BrdfMap("BRDF Map", 2D) = "white" {}
 
 		[Header(TestProp)]
 		_Test("test", Range(0, 50)) = 0
@@ -47,7 +48,7 @@
 				CGPROGRAM
 
 				#pragma target 3.0
-				#pragma multi_compile_fwdbase_fullshadows
+				#pragma multi_compile_fwdbase
 
 				#pragma vertex vert
 				#pragma fragment frag
@@ -87,15 +88,14 @@
 				float4 _Tint, _FresnelColor;
 				float _Metallic, _Roughness, _Anisotropy;
 				float _NDF;
-				sampler2D _MainTex, _RoughnessMap, _NormalMap, _MetalnessMap, _OcclusionMap;
+				sampler2D _MainTex, _RoughnessMap, _NormalMap, _MetalnessMap, _OcclusionMap, _BrdfMap;
 				float4 _MainTex_ST, _RoughnessMap_ST, _NormalMap_ST, _MetalnessMap_ST, _OcclusionMap_ST;
-				sampler2D _LUT;
 
 				//test
 				float _Test;
 
 				//para
-				int EnableDiffuse, EnableSpecular, aD, aF, aG, DebugNormalMode, EnableSH;
+				int EnableDiffuse, EnableSpecular, aD, aF, aG, DebugNormalMode, EnableSH, EnableShadow, IsAniotropy;
 
 				v2f vert(appdata v)
 				{
@@ -137,12 +137,12 @@
 					i.normal = normal;
 
 					// This assumes that the maximum param is right if both are supplied (range and map)
-					float roughness = max(_Roughness + EPS, tex2D(_RoughnessMap, i.uv).r) + EPS;
-					float metalness = max(_Metallic + EPS, tex2D(_MetalnessMap, i.uv).r) + EPS;
+					float roughness = max(_Roughness + EPS, tex2D(_RoughnessMap, i.uv).r);
+					float metalness = max(_Metallic + EPS, tex2D(_MetalnessMap, i.uv).r);
 					float occlusion = (tex2D(_OcclusionMap, i.uv).r);
 
 					float4 baseColor = tex2D(_MainTex, i.uv) * _Tint;
-					float4 albedo = baseColor * (1.0 - metalness);// *occlusion;
+					float4 albedo = baseColor * (1.0 - metalness);
 
 					// AdotB，emmm反正先排列组合全写上了要用啥拿啥吧
 					// 最小值设置0.00001是为了防止除数为0的情况报error
@@ -150,19 +150,20 @@
 					float NdotH = max((dot(i.normal, halfVec)), EPS);
 					float HdotV = max((dot(halfVec, viewDir)), EPS);
 					float NdotV = max((dot(i.normal, viewDir)), EPS);
-					float LdotH = max((dot(lightDir, halfVec)), EPS);
+					float HdotL = max((dot(halfVec, lightDir)), EPS);
 					float VdotH = max((dot(viewDir, halfVec)), EPS);
 					float HdotT = dot(halfVec, i.tangentLocal);
 					float HdotB = dot(halfVec, i.bitangentLocal);
 
 					//----------------------------------------
 					//迪士尼漫反射
-					float3 DisneyTerm = DisneyDiffuse(albedo, LdotH, NdotL, VdotH, roughness);
+					float3 DisneyTerm = DisneyDiffuse(albedo, VdotH, HdotV, HdotL, roughness);
 
 					//----------------------------------------
 					//D-法线分布函数
-					float D = trowbridgeReitzAnisotropicNDF(NdotH, roughness, _Anisotropy, HdotT, HdotB);
-					D = trowbridgeReitzNDF(NdotH, roughness);
+					float D1 = trowbridgeReitzAnisotropicNDF(NdotH, roughness, _Anisotropy, HdotT, HdotB);
+					float D2 = trowbridgeReitzNDF(NdotH, roughness);
+					float D = (IsAniotropy == 1) ? D1 : D2;
 
 					//G-遮蔽
 					float G = schlickBeckmannGAF(NdotV, roughness) * schlickBeckmannGAF(NdotL, roughness);
@@ -180,7 +181,7 @@
 					float3 Fterm = ((F * aF != 0) ? F : 1);
 					float3 SpecularResult = (aD + aF + aG == 0 ? 0 : (Gterm * Dterm * Fterm * 0.25) / (NdotV * NdotL));
 
-					float3 diffColor_result = kd * NdotL * EnableDiffuse * lightColor * albedo;
+					float3 diffColor_result = kd * DisneyTerm * EnableDiffuse * lightColor * albedo;
 					float3 specColor_result = SpecularResult * EnableSpecular * lightColor * albedo;
 					float3 DirectLightResult = diffColor_result + specColor_result;
 
@@ -190,29 +191,31 @@
 					float3 ambient = SH3band(i.normal, albedo);
 					float3 iblDiffuseResult = (EnableSH == 1) ? ambient : 0;
 
-					//iblspecular
+					// iblspecular
+					// BRDF integration Map
 					float2 brdfUV = float2(NdotV, _Roughness);
-					float2 preBRDF = tex2D(_LUT, brdfUV).xy;
+					float2 envBRDF = tex2D(_BrdfMap, brdfUV).xy;
 					float mip_roughness = roughness * (1.7 - 0.7 * roughness);
 					float3 reflectVec = reflect(-viewDir, i.normal);
 					half mip = mip_roughness * UNITY_SPECCUBE_LOD_STEPS;
 					float3 envSample = UNITY_SAMPLE_TEXCUBE_LOD(unity_SpecCube0, reflectVec, mip);
-					float3 iblSpecular = envSample;// DecodeHDR(envSample, unity_SpecCube0_HDR);
+					float3 iblSpecular = envSample;
 
 					float3 iblSpecularResult = iblSpecular;
+
+					//indirect specular
 					float3 IndirectResult = iblDiffuseResult + iblSpecularResult;
 
 					//realtime light shadow
 					//float shadow = SHADOW_ATTENUATION(i);
 					float attenuation = LIGHT_ATTENUATION(i) * 1;
-					float3 attenColor = attenuation;
+					float3 attenColor = (EnableShadow == 1) ? attenuation : 1;
 
-					float4 result = float4((DirectLightResult + IndirectResult) * attenColor, 1);
+					float4 result = float4((DirectLightResult + IndirectResult) * attenColor * occlusion, 1);
 					result.xyz = (DebugNormalMode == 1) ? i.normal * 0.5 + 0.5 : result.xyz;
 
-					return result;// float4((result.xyz), 1.0);
+					return result;
 				}
-
 				ENDCG
 			}
 		}

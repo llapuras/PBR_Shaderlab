@@ -73,7 +73,7 @@ float3 DisneyDiffuse(float3 col, float HdotV, float NdotV, float NdotL, float ro
     float F90 = 0.5 + 2 * roughness * HdotV * HdotV;
     float FdV = 1 + (F90 - 1) * Pow5(1 - NdotV);
     float FdL = 1 + (F90 - 1) * Pow5(1 - NdotL);
-    return F90;// col* ((1 / PI) * FdV * FdL);
+    return FdV * FdL;
 }
 
 // Schlick Fresnel
@@ -136,8 +136,7 @@ float3 SH3band(float3 normal, float3 albedo)
 {
     float3 skyLightBand2 = SHEvalLinearL0L1(float4(normal, 1));
     float3 skyLightBand3 = ShadeSH9(float4(normal, 1));
-    float3 ambient = 0.05 * albedo;
-    return skyLightBand3 + ambient; // *ao;//这里还要加ao！记得加上！
+    return skyLightBand3 * albedo;
 }
 
 //-----------------------------------
