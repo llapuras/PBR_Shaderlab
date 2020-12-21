@@ -85,16 +85,16 @@ Material:
     - _Glossiness: 0.5
     - _GlossyReflections: 1
     - _Ior: 1
-    - _Metallic: 0
+    - _Metallic: 0.164
     - _Mode: 0
     - _NDF: 1
     - _OcclusionStrength: 1
     - _Parallax: 0.02
-    - _Roughness: 0
+    - _Roughness: 0.282
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
     - _SrcBlend: 1
-    - _Test: 0
+    - _Test: 0.005
     - _UVSec: 0
     - _ZWrite: 1
     - aD: 1

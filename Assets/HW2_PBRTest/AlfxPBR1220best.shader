@@ -108,7 +108,7 @@
 				o.bitangent = normalize(cross(o.normal, o.tangent.xyz));
 
 				o.tangentLocal = v.tangent;
-				o.bitangentLocal = normalize(cross(v.normal, o.tangentLocal));
+				o.bitangentLocal = normalize(cross(o.normal, o.tangentLocal));
 
 				TRANSFER_SHADOW(o);
 				return o;
