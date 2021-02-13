@@ -1,0 +1,330 @@
+Using pre-set license
+Built from '2020.2/staging' branch; Version is '2020.2.0b6 (24a0f8b56f72) revision 2400504'; Using compiler version '192528614'; Build Type 'Release'
+OS: 'Windows 10  (10.0.0) 64bit' Language: 'zh' Physical Memory: 16221 MB
+BatchMode: 1, IsHumanControllingUs: 0, StartBugReporterOnCrash: 0, Is64bit: 1, IsPro: 0
+
+ COMMAND LINE ARGUMENTS:
+D:\Unity\Editor\2020.2.0b6\Editor\Unity.exe
+-adb2
+-batchMode
+-noUpm
+-name
+AssetImportWorker0
+-projectPath
+G:/UnityDemo/PBR_Shaderlab
+-logFile
+Logs/AssetImportWorker0.log
+-srvPort
+53670
+Successfully changed project path to: G:/UnityDemo/PBR_Shaderlab
+G:/UnityDemo/PBR_Shaderlab
+Using Asset Import Pipeline V2.
+Refreshing native plugins compatible for Editor in 33.50 ms, found 0 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Initialize engine version: 2020.2.0b6 (24a0f8b56f72)
+[Subsystems] Discovering subsystems at path D:/Unity/Editor/2020.2.0b6/Editor/Data/Resources/UnitySubsystems
+[Subsystems] Discovering subsystems at path G:/UnityDemo/PBR_Shaderlab/Assets
+GfxDevice: creating device client; threaded=0
+Direct3D:
+    Version:  Direct3D 11.0 [level 11.1]
+    Renderer: NVIDIA GeForce GTX 1660 Ti (ID=0x2191)
+    Vendor:   
+    VRAM:     5991 MB
+    Driver:   27.21.14.5720
+Invalid texture used for cursor - check importer settings or texture creation. Texture must be RGBA32, readable, have alphaIsTransparency enabled and have no mip chain.
+
+Initialize mono
+Mono path[0] = 'D:/Unity/Editor/2020.2.0b6/Editor/Data/Managed'
+Mono path[1] = 'D:/Unity/Editor/2020.2.0b6/Editor/Data/MonoBleedingEdge/lib/mono/unityjit'
+Mono config path = 'D:/Unity/Editor/2020.2.0b6/Editor/Data/MonoBleedingEdge/etc'
+Using monoOptions --debugger-agent=transport=dt_socket,embedding=1,server=y,suspend=n,address=127.0.0.1:56780
+Begin MonoManager ReloadAssembly
+Registering precompiled unity dll's ...
+Register platform support module: D:/Unity/Editor/2020.2.0b6/Editor/Data/PlaybackEngines/WindowsStandaloneSupport/UnityEditor.WindowsStandalone.Extensions.dll
+Registered in 0.001338 seconds.
+Native extension for WindowsStandalone target not found
+Refreshing native plugins compatible for Editor in 32.56 ms, found 0 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Invoked RoslynAnalysisRunner static constructor.
+RoslynAnalysisRunner will not be running.
+RoslynAnalysisRunner has terminated.
+Mono: successfully reloaded assembly
+- Completed reload, in  1.691 seconds
+Platform modules already initialized, skipping
+Registering precompiled user dll's ...
+Registered in 0.000877 seconds.
+Begin MonoManager ReloadAssembly
+Symbol file LoadedFromMemory doesn't match image G:\UnityDemo\PBR_Shaderlab\Library\PackageCache\com.unity.ext.nunit@1.0.0\net35\unity-custom\nunit.framework.dll
+Native extension for WindowsStandalone target not found
+Refreshing native plugins compatible for Editor in 0.25 ms, found 0 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Invoked RoslynAnalysisRunner static constructor.
+RoslynAnalysisRunner will not be running.
+RoslynAnalysisRunner has terminated.
+Mono: successfully reloaded assembly
+- Completed reload, in  1.168 seconds
+Platform modules already initialized, skipping
+========================================================================
+Worker process is ready to serve import requests
+Launched and connected shader compiler UnityShaderCompiler.exe after 0.29 seconds
+Refreshing native plugins compatible for Editor in 0.24 ms, found 0 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Unloading 1091 Unused Serialized files (Serialized files now loaded: 0)
+System memory in use before: 73.1 MB.
+System memory in use after: 73.1 MB.
+
+Unloading 10 unused Assets to reduce memory usage. Loaded Objects now: 1549.
+Total: 2.324000 ms (FindLiveObjects: 0.320100 ms CreateObjectMapping: 0.059300 ms MarkObjects: 1.832900 ms  DeleteObjects: 0.110300 ms)
+
+========================================================================
+Received Import Request.
+  path: Assets/AlfxScene.unity
+  artifactKey: Guid(7a826c98b0cc21744b257d02e24132fd) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/AlfxScene.unity using Guid(7a826c98b0cc21744b257d02e24132fd) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: 'e866601cca5e1bc0a188b4386954b932') in 0.025183 seconds
+  Import took 0.068725 seconds .
+
+========================================================================
+Received Import Request.
+  Time since last request: 168.100400 seconds.
+  path: Assets/AlfxScene.unity
+  artifactKey: Guid(7a826c98b0cc21744b257d02e24132fd) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/AlfxScene.unity using Guid(7a826c98b0cc21744b257d02e24132fd) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: '2bfd7eaae53338d58b08434d32f98d5b') in 0.003789 seconds
+  Import took 0.099709 seconds .
+
+========================================================================
+Received Prepare
+Reloading mono domain
+Begin MonoManager ReloadAssembly
+Registering precompiled unity dll's ...
+Register platform support module: D:/Unity/Editor/2020.2.0b6/Editor/Data/PlaybackEngines/WindowsStandaloneSupport/UnityEditor.WindowsStandalone.Extensions.dll
+Registered in 0.001256 seconds.
+Symbol file LoadedFromMemory doesn't match image G:\UnityDemo\PBR_Shaderlab\Library\PackageCache\com.unity.ext.nunit@1.0.0\net35\unity-custom\nunit.framework.dll
+Native extension for WindowsStandalone target not found
+Refreshing native plugins compatible for Editor in 30.72 ms, found 0 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Invoked RoslynAnalysisRunner static constructor.
+RoslynAnalysisRunner will not be running.
+RoslynAnalysisRunner has terminated.
+Mono: successfully reloaded assembly
+- Completed reload, in  1.044 seconds
+Platform modules already initialized, skipping
+Registering precompiled user dll's ...
+Registered in 0.000832 seconds.
+Begin MonoManager ReloadAssembly
+Symbol file LoadedFromMemory doesn't match image G:\UnityDemo\PBR_Shaderlab\Library\PackageCache\com.unity.ext.nunit@1.0.0\net35\unity-custom\nunit.framework.dll
+Native extension for WindowsStandalone target not found
+Refreshing native plugins compatible for Editor in 0.24 ms, found 0 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Invoked RoslynAnalysisRunner static constructor.
+RoslynAnalysisRunner will not be running.
+RoslynAnalysisRunner has terminated.
+Mono: successfully reloaded assembly
+- Completed reload, in  1.010 seconds
+Platform modules already initialized, skipping
+Refreshing native plugins compatible for Editor in 0.24 ms, found 0 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Unloading 6 Unused Serialized files (Serialized files now loaded: 0)
+System memory in use before: 52.0 MB.
+System memory in use after: 52.1 MB.
+
+Unloading 5 unused Assets to reduce memory usage. Loaded Objects now: 1553.
+Total: 2.290200 ms (FindLiveObjects: 0.289600 ms CreateObjectMapping: 0.050200 ms MarkObjects: 1.876800 ms  DeleteObjects: 0.072500 ms)
+
+========================================================================
+Received Import Request.
+  Time since last request: 27.132868 seconds.
+  path: Assets/AlfxScene.unity
+  artifactKey: Guid(7a826c98b0cc21744b257d02e24132fd) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/AlfxScene.unity using Guid(7a826c98b0cc21744b257d02e24132fd) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: '74a5464c5da6b3ce5417aef110a96059') in 0.013449 seconds
+  Import took 0.077104 seconds .
+
+========================================================================
+Received Prepare
+Reloading mono domain
+Begin MonoManager ReloadAssembly
+Registering precompiled unity dll's ...
+Register platform support module: D:/Unity/Editor/2020.2.0b6/Editor/Data/PlaybackEngines/WindowsStandaloneSupport/UnityEditor.WindowsStandalone.Extensions.dll
+Registered in 0.001545 seconds.
+Symbol file LoadedFromMemory doesn't match image G:\UnityDemo\PBR_Shaderlab\Library\PackageCache\com.unity.ext.nunit@1.0.0\net35\unity-custom\nunit.framework.dll
+Native extension for WindowsStandalone target not found
+Refreshing native plugins compatible for Editor in 30.77 ms, found 0 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Invoked RoslynAnalysisRunner static constructor.
+RoslynAnalysisRunner will not be running.
+RoslynAnalysisRunner has terminated.
+Mono: successfully reloaded assembly
+- Completed reload, in  1.105 seconds
+Platform modules already initialized, skipping
+Registering precompiled user dll's ...
+Registered in 0.000841 seconds.
+Begin MonoManager ReloadAssembly
+Symbol file LoadedFromMemory doesn't match image G:\UnityDemo\PBR_Shaderlab\Library\PackageCache\com.unity.ext.nunit@1.0.0\net35\unity-custom\nunit.framework.dll
+Native extension for WindowsStandalone target not found
+Refreshing native plugins compatible for Editor in 0.23 ms, found 0 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Invoked RoslynAnalysisRunner static constructor.
+RoslynAnalysisRunner will not be running.
+RoslynAnalysisRunner has terminated.
+Mono: successfully reloaded assembly
+- Completed reload, in  1.032 seconds
+Platform modules already initialized, skipping
+Refreshing native plugins compatible for Editor in 0.23 ms, found 0 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Unloading 6 Unused Serialized files (Serialized files now loaded: 0)
+System memory in use before: 52.3 MB.
+System memory in use after: 52.4 MB.
+
+Unloading 5 unused Assets to reduce memory usage. Loaded Objects now: 1557.
+Total: 2.206500 ms (FindLiveObjects: 0.349700 ms CreateObjectMapping: 0.051700 ms MarkObjects: 1.725500 ms  DeleteObjects: 0.077800 ms)
+
+========================================================================
+Received Import Request.
+  Time since last request: 167.876188 seconds.
+  path: Assets/AlfxScene.unity
+  artifactKey: Guid(7a826c98b0cc21744b257d02e24132fd) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/AlfxScene.unity using Guid(7a826c98b0cc21744b257d02e24132fd) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: '31c87418adb62c7dbdfe4b9e91bdd4a0') in 0.015519 seconds
+  Import took 0.022487 seconds .
+
+========================================================================
+Received Import Request.
+  Time since last request: 2.874241 seconds.
+  path: Assets/AlfxScene.unity
+  artifactKey: Guid(7a826c98b0cc21744b257d02e24132fd) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/AlfxScene.unity using Guid(7a826c98b0cc21744b257d02e24132fd) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: '7446e83fc9b4ad1c1b2c4d5507a61bd8') in 0.003113 seconds
+  Import took 0.005944 seconds .
+
+========================================================================
+Received Prepare
+Reloading mono domain
+Begin MonoManager ReloadAssembly
+Registering precompiled unity dll's ...
+Register platform support module: D:/Unity/Editor/2020.2.0b6/Editor/Data/PlaybackEngines/WindowsStandaloneSupport/UnityEditor.WindowsStandalone.Extensions.dll
+Registered in 0.001244 seconds.
+Symbol file LoadedFromMemory doesn't match image G:\UnityDemo\PBR_Shaderlab\Library\PackageCache\com.unity.ext.nunit@1.0.0\net35\unity-custom\nunit.framework.dll
+Native extension for WindowsStandalone target not found
+Refreshing native plugins compatible for Editor in 33.25 ms, found 0 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Invoked RoslynAnalysisRunner static constructor.
+RoslynAnalysisRunner will not be running.
+RoslynAnalysisRunner has terminated.
+Mono: successfully reloaded assembly
+- Completed reload, in  1.086 seconds
+Platform modules already initialized, skipping
+Registering precompiled user dll's ...
+Registered in 0.000822 seconds.
+Begin MonoManager ReloadAssembly
+Symbol file LoadedFromMemory doesn't match image G:\UnityDemo\PBR_Shaderlab\Library\PackageCache\com.unity.ext.nunit@1.0.0\net35\unity-custom\nunit.framework.dll
+Native extension for WindowsStandalone target not found
+Refreshing native plugins compatible for Editor in 0.24 ms, found 0 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Invoked RoslynAnalysisRunner static constructor.
+RoslynAnalysisRunner will not be running.
+RoslynAnalysisRunner has terminated.
+Mono: successfully reloaded assembly
+- Completed reload, in  1.060 seconds
+Platform modules already initialized, skipping
+Refreshing native plugins compatible for Editor in 0.23 ms, found 0 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Unloading 6 Unused Serialized files (Serialized files now loaded: 0)
+System memory in use before: 52.9 MB.
+System memory in use after: 53.0 MB.
+
+Unloading 5 unused Assets to reduce memory usage. Loaded Objects now: 1561.
+Total: 2.168700 ms (FindLiveObjects: 0.291800 ms CreateObjectMapping: 0.051700 ms MarkObjects: 1.747200 ms  DeleteObjects: 0.076800 ms)
+
+========================================================================
+Received Import Request.
+  Time since last request: 16.120835 seconds.
+  path: Assets/AlfxScene.unity
+  artifactKey: Guid(7a826c98b0cc21744b257d02e24132fd) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/AlfxScene.unity using Guid(7a826c98b0cc21744b257d02e24132fd) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: '4311d7bb4aa2fa76045c2dd82a7b4b5f') in 0.014702 seconds
+  Import took 0.029645 seconds .
+
+========================================================================
+Received Prepare
+Reloading mono domain
+Begin MonoManager ReloadAssembly
+Registering precompiled unity dll's ...
+Register platform support module: D:/Unity/Editor/2020.2.0b6/Editor/Data/PlaybackEngines/WindowsStandaloneSupport/UnityEditor.WindowsStandalone.Extensions.dll
+Registered in 0.001263 seconds.
+Symbol file LoadedFromMemory doesn't match image G:\UnityDemo\PBR_Shaderlab\Library\PackageCache\com.unity.ext.nunit@1.0.0\net35\unity-custom\nunit.framework.dll
+Native extension for WindowsStandalone target not found
+Refreshing native plugins compatible for Editor in 30.18 ms, found 0 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Invoked RoslynAnalysisRunner static constructor.
+RoslynAnalysisRunner will not be running.
+RoslynAnalysisRunner has terminated.
+Mono: successfully reloaded assembly
+- Completed reload, in  1.123 seconds
+Platform modules already initialized, skipping
+Registering precompiled user dll's ...
+Registered in 0.000814 seconds.
+Begin MonoManager ReloadAssembly
+Symbol file LoadedFromMemory doesn't match image G:\UnityDemo\PBR_Shaderlab\Library\PackageCache\com.unity.ext.nunit@1.0.0\net35\unity-custom\nunit.framework.dll
+Native extension for WindowsStandalone target not found
+Refreshing native plugins compatible for Editor in 0.23 ms, found 0 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Invoked RoslynAnalysisRunner static constructor.
+RoslynAnalysisRunner will not be running.
+RoslynAnalysisRunner has terminated.
+Mono: successfully reloaded assembly
+- Completed reload, in  1.076 seconds
+Platform modules already initialized, skipping
+Refreshing native plugins compatible for Editor in 0.24 ms, found 0 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Unloading 6 Unused Serialized files (Serialized files now loaded: 0)
+System memory in use before: 53.3 MB.
+System memory in use after: 53.4 MB.
+
+Unloading 5 unused Assets to reduce memory usage. Loaded Objects now: 1565.
+Total: 2.354600 ms (FindLiveObjects: 0.299100 ms CreateObjectMapping: 0.052800 ms MarkObjects: 1.931200 ms  DeleteObjects: 0.070600 ms)
+
+========================================================================
+Received Import Request.
+  Time since last request: 121.986195 seconds.
+  path: Assets/Cursor/doge.png
+  artifactKey: Guid(06bccd87bb38efb48a2664f05714fb11) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/Cursor/doge.png using Guid(06bccd87bb38efb48a2664f05714fb11) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: '427541cd9994a5d1fc1ea930a1e3a285') in 0.182987 seconds
+  Import took 0.186484 seconds .
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.571100 seconds.
+  path: Assets/Materials/Mat_Statue.mat
+  artifactKey: Guid(bf007b2b0ca5719478232aec06675f2a) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/Materials/Mat_Statue.mat using Guid(bf007b2b0ca5719478232aec06675f2a) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: '75c83f0262254927ac6b2e627dcde238') in 0.302918 seconds
+  Import took 0.306447 seconds .
+
+========================================================================
+Received Import Request.
+  Time since last request: 1.139755 seconds.
+  path: Assets/AlfxScene/AlfxScene.lighting
+  artifactKey: Guid(b3a6de29fe5f49e48a14ed6b753ea1e7) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/AlfxScene/AlfxScene.lighting using Guid(b3a6de29fe5f49e48a14ed6b753ea1e7) Importer(815301076,1909f56bfc062723c751e8b465ee728b) LightingSettings: switching bake backend from 1 to 2.
+ -> (artifact id: '4fbe180859ef08d0b51fdfa7459b19c4') in 0.016982 seconds
+  Import took 0.019938 seconds .
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000249 seconds.
+  path: Assets/AlfxScene/ReflectionProbe-0.exr
+  artifactKey: Guid(e1fd87563613ae34a8e3aed37960c49b) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/AlfxScene/ReflectionProbe-0.exr using Guid(e1fd87563613ae34a8e3aed37960c49b) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: '8e574720c0b71d2eeaca832816ccb9e7') in 0.309431 seconds
+  Import took 0.312317 seconds .
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000324 seconds.
+  path: Assets/AlfxScene/ReflectionProbe-1.exr
+  artifactKey: Guid(c62ede9b7c87f2d4ab3ea4f8177d9b1c) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/AlfxScene/ReflectionProbe-1.exr using Guid(c62ede9b7c87f2d4ab3ea4f8177d9b1c) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: '218e509143b63f3eeeef3c95dba682c9') in 0.074107 seconds
+  Import took 0.077131 seconds .
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000283 seconds.
+  path: Assets/AlfxScene/LightingData.asset
+  artifactKey: Guid(1a511b8a578719d45ab97fdb3f949df1) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/AlfxScene/LightingData.asset using Guid(1a511b8a578719d45ab97fdb3f949df1) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: 'c73ebc35be07786e8ffa154810a3a784') in 0.015347 seconds
+  Import took 0.018936 seconds .
+
